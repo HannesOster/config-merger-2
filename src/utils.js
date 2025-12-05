@@ -1,4 +1,5 @@
 import xpath from "xpath";
+
 export const mergeAssemblyBindings = (xmlA, xmlB) => {
   const parser = new DOMParser();
   const serializer = new XMLSerializer();
@@ -37,6 +38,9 @@ export const mergeAssemblyBindings = (xmlA, xmlB) => {
     if (name) mapA.set(name, depA);
   });
 
+  // 🔥 Änderungen sammeln
+  const changes = [];
+
   assembliesB.forEach((depB) => {
     const name = xpath.select1(
       "string(*[local-name()='assemblyIdentity']/@name)",
@@ -55,19 +59,41 @@ export const mergeAssemblyBindings = (xmlA, xmlB) => {
       );
 
       if (redirectA && redirectB) {
-        const newVersionA = xpath.select1("string(@newVersion)", redirectA);
-        const newVersionB = xpath.select1("string(@newVersion)", redirectB);
+        const newVersionA = redirectA.getAttribute("newVersion");
+        const newVersionB = redirectB.getAttribute("newVersion");
 
         if (newVersionA && newVersionA !== newVersionB) {
           redirectB.setAttribute(
             "oldVersion",
-            redirectA.getAttribute("oldVersion") || "0.0.0.0"
+            redirectA.getAttribute("oldVersion")
           );
           redirectB.setAttribute("newVersion", newVersionA);
+
+          changes.push({
+            package: name,
+            oldVersion: newVersionB,
+            newVersion: newVersionA,
+          });
         }
       }
     }
   });
 
-  return serializer.serializeToString(docB);
+  return {
+    mergedXml: serializer.serializeToString(docB),
+    changes,
+  };
+};
+
+export const isDowngrade = (oldV, newV) => {
+  const a = oldV.split(".").map(Number);
+  const b = newV.split(".").map(Number);
+
+  for (let i = 0; i < Math.max(a.length, b.length); i++) {
+    const x = a[i] || 0;
+    const y = b[i] || 0;
+    if (y < x) return true;
+    if (y > x) return false;
+  }
+  return false;
 };

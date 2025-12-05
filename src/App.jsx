@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { mergeAssemblyBindings } from "./utils";
-import FileDragDrop from "./components/FileDragDrop";
-import ReactCodeMirror from "@uiw/react-codemirror";
-import { Output } from "./components/Output";
 import { FileUpload } from "./components/FileUpload";
+import { Output } from "./components/Output";
 
 function App() {
   const [fileA, setFileA] = useState(null);
   const [fileB, setFileB] = useState(null);
-  const [textBContent, setTextBContent] = useState("");
-  const [result, setResult] = useState("");
+
+  const [mergedXml, setMergedXml] = useState("");
+  const [changes, setChanges] = useState([]);
+
   const [loading, setLoading] = useState(false);
 
   const readFileAsText = (file) =>
@@ -21,23 +21,26 @@ function App() {
     });
 
   const downloadResult = () => {
-    if (!result) return; // nichts zu speichern
-    const blob = new Blob([result], { type: "text/xml" }); // .config ist XML-basiert
+    if (!mergedXml) return;
+
+    const blob = new Blob([mergedXml], { type: "text/xml" });
     const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "merged.config"; // Name der Datei
+    a.download = "merged.web.config";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url); // Speicher freigeben
+    URL.revokeObjectURL(url);
   };
 
   const handleCompare = async () => {
     if (!fileA || !fileB) return;
+
     setLoading(true);
-    setResult("");
+    setMergedXml("");
+    setChanges([]);
 
     try {
       const [textA, textB] = await Promise.all([
@@ -45,13 +48,13 @@ function App() {
         readFileAsText(fileB),
       ]);
 
-      setTextBContent(textB);
+      const result = mergeAssemblyBindings(textA, textB);
 
-      const merged = mergeAssemblyBindings(textA, textB);
-      setResult(merged);
+      setMergedXml(result.mergedXml);
+      setChanges(result.changes);
     } catch (err) {
       console.error(err);
-      setResult("❌ Fehler: " + err.message);
+      alert("❌ Fehler: " + err.message);
     }
 
     setLoading(false);
@@ -61,9 +64,10 @@ function App() {
     <div className="min-h-screen flex items-center justify-center p-6 min-w-[1000px]">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl p-10 flex flex-col gap-8 justify-center">
         <h1 className="text-3xl font-extrabold text-blue-900 text-center">
-          Config Merger{" "}
+          Config Merger
         </h1>
 
+        {/* Datei Upload */}
         <FileUpload
           setFileA={setFileA}
           fileA={fileA}
@@ -73,10 +77,11 @@ function App() {
           loading={loading}
         />
 
+        {/* Ausgabe */}
         <Output
-          textA={textBContent}
+          changes={changes}
+          mergedXml={mergedXml}
           downloadResult={downloadResult}
-          textB={result}
         />
       </div>
     </div>
