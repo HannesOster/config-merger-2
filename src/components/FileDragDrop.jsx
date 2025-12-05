@@ -1,6 +1,6 @@
 import { File, FileCheck2, FileUp } from "lucide-react";
 
-function FileDragDrop({ label, setFile, file }) {
+function FileInput({ label, setFile, file }) {
   return (
     <div className="flex-1 flex flex-col">
       <div className="w-full py-9 bg-gray-50 rounded-2xl border border-gray-300 gap-3 grid border-dashed">
@@ -31,4 +31,4 @@ function FileDragDrop({ label, setFile, file }) {
     </div>
   );
 }
-export default FileDragDrop;
+export default FileInput;

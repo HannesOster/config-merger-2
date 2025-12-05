@@ -1,4 +1,4 @@
-import FileDragDrop from "./FileDragDrop";
+import FileInput from "./FileDragDrop";
 
 export function FileUpload({
   setFileA,
@@ -11,13 +11,9 @@ export function FileUpload({
   return (
     <>
       <div className="flex gap-6">
-        <FileDragDrop
-          label="Web.config lokal"
-          setFile={setFileA}
-          file={fileA}
-        />
+        <FileInput label="Web.config lokal" setFile={setFileA} file={fileA} />
 
-        <FileDragDrop
+        <FileInput
           label="Web.config Zielsystem"
           setFile={setFileB}
           file={fileB}
