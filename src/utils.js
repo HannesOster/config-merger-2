@@ -38,7 +38,6 @@ export const mergeAssemblyBindings = (xmlA, xmlB) => {
     if (name) mapA.set(name, depA);
   });
 
-  // 🔥 Änderungen sammeln
   const changes = [];
 
   assembliesB.forEach((depB) => {
@@ -73,6 +72,7 @@ export const mergeAssemblyBindings = (xmlA, xmlB) => {
             package: name,
             oldVersion: newVersionB,
             newVersion: newVersionA,
+            lineNumber: findLineByPackageName(xmlB, name),
           });
         }
       }
@@ -96,4 +96,19 @@ export const isDowngrade = (oldV, newV) => {
     if (y > x) return false;
   }
   return false;
+};
+
+const findLineByPackageName = (xmlText, packageName) => {
+  const xml = xmlText.replace(/\r/g, "");
+  const lines = xml.split("\n");
+
+  const search = `name="${packageName}"`;
+
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].includes(search)) {
+      return i + 1; // Zeilennummer 1-basiert
+    }
+  }
+
+  return null;
 };

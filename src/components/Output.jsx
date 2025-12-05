@@ -25,13 +25,19 @@ export const Output = ({ changes = [], mergedXml = "", downloadResult }) => {
           <ul className="flex flex-col gap-3">
             {changes.map((c, idx) => {
               const downgrade = isDowngrade(c.oldVersion, c.newVersion);
-
               return (
                 <li
                   key={idx}
                   className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex justify-between items-center"
                 >
-                  <div className="font-semibold text-blue-900">{c.package}</div>
+                  <div className="flex flex-col">
+                    <div className="font-semibold text-blue-900">
+                      {c.package}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      Zeile: {c.lineNumber}
+                    </div>
+                  </div>
                   <div className="text-sm text-gray-700">
                     {c.oldVersion} ➜{" "}
                     <span
